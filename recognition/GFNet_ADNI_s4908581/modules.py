@@ -17,31 +17,7 @@ import math
 from timm.layers import DropPath, to_2tuple, trunc_normal_
 import torch.fft
 
-class SquaredReLU(nn.Module):
-    def __init__(self, inplace=False):
-        super().__init__()
-        self.relu = nn.ReLU(inplace=inplace)
-    
-    def forward(self, x):
-        return torch.square(self.relu(x))
 
-class LayerNormGeneral(nn.Module):
-    """通用归一化层"""
-    def __init__(self, dim, eps=1e-6, bias=False):
-        super().__init__()
-        self.weight = nn.Parameter(torch.ones(dim))
-        self.bias = nn.Parameter(torch.zeros(dim)) if bias else None
-        self.eps = eps
-    
-    def forward(self, x):
-        mean = x.mean(-1, keepdim=True)
-        std = x.std(-1, keepdim=True)
-        x = (x - mean) / (std + self.eps)
-        x = x * self.weight
-        if self.bias is not None:
-            x = x + self.bias
-        return x
-    
 class Mlp(nn.Module):
     """
     A FeedForward Network (MLP) consisting of two linear layers with a non-linear activation in between.
@@ -53,12 +29,12 @@ class Mlp(nn.Module):
         drop (float): Dropout rate (default: 0.0).
     """
 
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=SquaredReLU, drop=0.):
+    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         self.fc1 = nn.Linear(in_features, hidden_features)
-        self.act = act_layer
+        self.act = act_layer()
         self.fc2 = nn.Linear(hidden_features, out_features)
         # Dropout layer to avoid overfitting
         self.drop = nn.Dropout(drop)
@@ -150,7 +126,6 @@ class Block(nn.Module):
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
-        self.gamma = nn.Parameter(1e-5 * torch.ones(dim), requires_grad=True)
 
     def forward(self, x):
         """
@@ -162,7 +137,7 @@ class Block(nn.Module):
         """
 
         # Apply normalization, global filtering, MLP, and DropPath
-        x = x + self.drop_path(self.gamma * self.mlp(self.norm2(self.filter(self.norm1(x)))))
+        x = x + self.drop_path(self.mlp(self.norm2(self.filter(self.norm1(x)))))
         return x
     
 
