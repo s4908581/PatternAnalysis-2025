@@ -137,8 +137,15 @@ class Block(nn.Module):
         """
 
         # Apply normalization, global filtering, MLP, and DropPath
-        x = x + self.drop_path(self.mlp(self.norm2(self.filter(self.norm1(x)))))
-        return x
+        # x = x + self.drop_path(self.mlp(self.norm2(self.filter(self.norm1(x)))))
+        # return x
+        residual = x
+        x = self.norm1(x)
+        x = self.filter(x)
+        x = self.norm2(x)
+        x = self.mlp(x)
+        return residual + self.drop_path(x)
+        
     
 
 class PatchEmbed(nn.Module):
@@ -204,7 +211,7 @@ class GFNet(nn.Module):
         super().__init__()
         self.num_classes = num_classes
         self.num_features = self.embed_dim = embed_dim  
-        norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-6)
+        norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-5)
 
         # Patch Embedding
         self.patch_embed = PatchEmbed(
