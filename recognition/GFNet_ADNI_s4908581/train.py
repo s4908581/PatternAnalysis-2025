@@ -19,14 +19,14 @@ def main():
 
     # Hyperparameters
     batch_size = 32
-    base_lr = 0.0001    
-    num_epochs = 120 
+    base_lr = 0.0005    
+    num_epochs = 150 
     num_workers = 4
 
     # Load the ADNI dataset using DataLoader for training and validation
     train_loader, val_loader = get_adni_dataloader(batch_size=batch_size, train=True, num_workers=num_workers)
 
-    model = GFNet(depth=8).to(device)  
+    model = GFNet(depth=10).to(device)  
     criterion = nn.CrossEntropyLoss()
 
     # Optimizer and LR Scheduler
@@ -49,7 +49,7 @@ def main():
               f'LR: {scheduler.get_last_lr()[0]:.6f}')
 
     # Save Model
-    torch.save(model.state_dict(), 'gfnet_model.pth')
+    torch.save(model.state_dict(), 'gfnet_model2.pth')
     plot_metrics(num_epochs, train_losses, val_losses, train_accuracies, val_accuracies)
 
 
