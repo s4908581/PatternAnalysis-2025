@@ -15,12 +15,21 @@ BASE_DIR = Path(__file__).parent
 ADNI_ROOT_PATH = BASE_DIR / 'ADNI'
 
 # Transformations for training set and preprocessing testing set
+# TRAIN_TRANSFORM = transforms.Compose([
+#     transforms.RandomRotation(degrees=10),
+#     transforms.RandomResizedCrop(size=224),
+#     transforms.ColorJitter(brightness=(0.8, 1.2)), 
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.0062], std=[0.0083])
+# ])
+# 
 TRAIN_TRANSFORM = transforms.Compose([
-    transforms.RandomRotation(degrees=10),
-    transforms.RandomResizedCrop(size=224),
+    transforms.RandomRotation(15),
     transforms.ColorJitter(brightness=(0.8, 1.2)), 
+    transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+    transforms.RandomResizedCrop(size=224),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.0062], std=[0.0083])
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
 TEST_TRANSFORM = transforms.Compose([
