@@ -29,7 +29,7 @@ class Mlp(nn.Module):
         drop (float): Dropout rate (default: 0.0).
     """
 
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=SquaredReLU, drop=0.):
+    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -279,4 +279,5 @@ class GFNet(nn.Module):
         x = self.final_dropout(x)
         x = self.head(x)
         return x
+
 
