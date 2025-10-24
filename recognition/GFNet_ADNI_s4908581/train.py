@@ -30,7 +30,12 @@ def main():
     criterion = nn.CrossEntropyLoss()
 
     # Optimizer and LR Scheduler
-    optimizer = optim.Adam(model.parameters(), lr=base_lr)
+    # optimizer = optim.Adam(model.parameters(), lr=base_lr)
+    optimizer = AdamW(model.parameters(), 
+                  lr=base_lr, 
+                  weight_decay=1e-4, 
+                  betas=(0.9, 0.999), 
+                  eps=1e-8)
     scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=1e-6)
 
     train_losses, val_losses = [], []
@@ -171,3 +176,4 @@ def plot_metrics(num_epochs, train_losses, val_losses, train_accuracies, val_acc
 
 if __name__ == '__main__':
     main()
+
