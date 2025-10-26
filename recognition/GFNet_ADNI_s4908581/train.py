@@ -13,8 +13,25 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 
-best_val_acc = 0.0
-patience, counter = 10, 0
+
+class LabelSmoothCE(nn.Module):
+    """Label Smoothing Cross Entropy Loss"""
+    
+    def __init__(self, smoothing=0.1):
+        super().__init__()
+        self.smoothing = smoothing
+    
+    def forward(self, inputs, targets):
+        confidence = 1.0 - self.smoothing
+        log_probs = F.log_softmax(inputs, dim=-1)
+        
+        nll_loss = -log_probs.gather(dim=-1, index=targets.unsqueeze(1))
+        nll_loss = nll_loss.squeeze(1)
+        
+        smooth_loss = -log_probs.mean(dim=-1)
+        
+        loss = confidence * nll_loss + self.smoothing * smooth_loss
+        return loss.mean()
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -22,15 +39,19 @@ def main():
 
     # Hyperparameters
     batch_size = 32
-    base_lr = 0.0005    
-    num_epochs = 150 
+    base_lr = 0.0001    
+    num_epochs = 120 
     num_workers = 4
+
+    best_val_acc = 0.0
+    patience, counter = 10, 0
 
     # Load the ADNI dataset using DataLoader for training and validation
     train_loader, val_loader = get_adni_dataloader(batch_size=batch_size, train=True, num_workers=num_workers)
 
-    model = GFNet(depth=10).to(device)  
-    criterion = nn.CrossEntropyLoss()
+    model = GFNet(depth=8).to(device)  
+    # criterion = nn.CrossEntropyLoss()
+    criterion = LabelSmoothCE(smoothing=0.1)
 
     # Optimizer and LR Scheduler
     optimizer = optim.Adam(model.parameters(), lr=base_lr)
