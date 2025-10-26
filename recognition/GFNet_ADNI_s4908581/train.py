@@ -36,7 +36,8 @@ def main():
     #              weight_decay=1e-4, 
     #              betas=(0.9, 0.999), 
     #              eps=1e-8)
-    scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=1e-6)
+    #scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=1e-6)
+    scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=20, T_mult=2, eta_min=1e-7)
 
     train_losses, val_losses = [], []
     train_accuracies, val_accuracies = [], []
@@ -176,5 +177,6 @@ def plot_metrics(num_epochs, train_losses, val_losses, train_accuracies, val_acc
 
 if __name__ == '__main__':
     main()
+
 
 
