@@ -39,7 +39,7 @@ def main():
 
     # Hyperparameters
     batch_size = 32
-    base_lr = 0.0001    
+    base_lr = 0.001    
     num_epochs = 120 
     num_workers = 4
 
@@ -211,3 +211,4 @@ def plot_metrics(num_epochs, train_losses, val_losses, train_accuracies, val_acc
 
 if __name__ == '__main__':
     main()
+
