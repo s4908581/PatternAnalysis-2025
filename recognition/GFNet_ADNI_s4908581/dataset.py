@@ -1,7 +1,4 @@
-"""
-Preprocesses training and testing set. 
-Handles Loading of ADNI dataset.
-"""
+""" This module handles the loading and data augmentation of ADNI dataset """
 
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -14,7 +11,9 @@ import torchvision.transforms as transforms
 BASE_DIR = Path(__file__).parent
 ADNI_ROOT_PATH = BASE_DIR / 'ADNI'
 
-# Transformations for training set and preprocessing testing set
+# Data augmentation and normalization for training
+# Including random rotations, resized crops, and color jittering
+# This helps improve model generalization
 TRAIN_TRANSFORM = transforms.Compose([
     transforms.RandomRotation(degrees=10),
     transforms.RandomResizedCrop(size=224),
@@ -30,20 +29,17 @@ TEST_TRANSFORM = transforms.Compose([
     transforms.Normalize(mean=[0.0062], std=[0.0083])
 ])
 
-
 class ADNIDataset(Dataset):
-    """
-    Custom PyTorch Dataset for loading images from the ADNI dataset.
-    """
+    """ Custom Dataset for loading ADNI images and labels. """
+
 
     def __init__(self, root_dir, train=True, transform=None):
+        """ Initializes the dataset by loading image paths and labels."""
         """
-        Initializes the ADNIDataset.
-
         Args:
-            root_dir (str or Path): Path to the root directory of the dataset.
-            train (bool): If True, load training data. If False, load test data.
-            transform (callable, optional): Optional transform.
+            root_dir (str or Path): Directory with all the images.
+            train (bool): If True, loads training data; otherwise, loads test data.
+            transform (callable, optional): Optional transform to be applied on a sample.
         """
 
         self.root_dir = Path(root_dir, 'train' if train else 'test')
@@ -72,9 +68,9 @@ class ADNIDataset(Dataset):
     def __len__(self):
         """
         Returns the total number of samples in the dataset.
-
+        
         Returns:
-            int: Number of samples in the dataset.
+            int: Total number of samples.
         """
 
         return len(self.image_paths)
@@ -82,12 +78,10 @@ class ADNIDataset(Dataset):
     def __getitem__(self, idx):
         """
         Retrieves an image and its corresponding label by index.
-
         Args:
-            idx (int): Index of the image to retrieve.
-
+            idx (int): Index of the sample to retrieve.
         Returns:
-            tuple: transformed image and its corresponding label
+            tuple: (image, label) where image is the transformed image tensor and label is its class label.
         """
 
         image_path = self.image_paths[idx]
@@ -102,36 +96,39 @@ class ADNIDataset(Dataset):
 
 def get_adni_dataloader(batch_size, train=True, val_split=0.2, num_workers=4):
     """
-    Creates DataLoader objects for the ADNI dataset.
+    Creates DataLoader for the ADNI dataset with training/validation split or test set.
 
     Args:
-        batch_size (int): Number of samples per batch to load.
-        train (bool): If True, creates data loaders for both training and validation datasets.
-                      If False, creates a data loader for the test dataset.
-        val_split (float): Fraction of the training data to be used for validation (applicable if train=True).
+        batch_size (int): Number of samples per batch.
+        train (bool): If True, returns training and validation DataLoaders; otherwise, returns test DataLoader.
+        val_split (float): Proportion of training data to use for validation.
+        num_workers (int): Number of subprocesses to use for data loading.
 
     Returns:
-        If train=True:
-            tuple: (train_loader, val_loader) where train_loader is for training data and val_loader is for validation data.
-        If train=False:
-            DataLoader: test_loader for the test dataset.
+        If train is True:
+            tuple: (train_loader, val_loader) DataLoaders for training and validation sets.
+        If train is False:
+            DataLoader: DataLoader for the test set.
     """
     
     if train:
-        # Create full training dataset and split into training and validation sets
+        # Create full training dataset
         full_dataset = ADNIDataset(root_dir=ADNI_ROOT_PATH, train=True, transform=TRAIN_TRANSFORM)
         train_size = int((1 - val_split) * len(full_dataset))
         val_size = len(full_dataset) - train_size
+        # Split dataset into training and validation sets
+        # The validation set helps monitor model performance on unseen data during training
         train_dataset, val_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])
         
-        # Create data loaders for training and validation sets
+        # Create DataLoaders for training and validation sets
+        # DataLoaders handle batching, shuffling, and parallel loading of data
         train_loader = DataLoader(
             train_dataset, 
-            batch_size=batch_size, 
-            shuffle=True,
-            num_workers=num_workers,
-            pin_memory=True, 
-            persistent_workers=True
+            batch_size=batch_size, # Batch size stands for number of samples per batch
+            shuffle=True, # Shuffle means shuffle training data for better generalization (reduce overfitting)
+            num_workers=num_workers, # Number of subprocesses to use for data loading, helps speed up data loading
+            pin_memory=True,  # Pin memory enables faster data transfer to GPU
+            persistent_workers=True # Keeps workers alive between epochs for efficiency
         )
         val_loader = DataLoader(
             val_dataset, 
@@ -144,7 +141,7 @@ def get_adni_dataloader(batch_size, train=True, val_split=0.2, num_workers=4):
         return train_loader, val_loader
     
     else:
-        # Create test dataset and data loader
+        # Create test dataset and DataLoader
         test_dataset = ADNIDataset(root_dir=ADNI_ROOT_PATH, train=False, transform=TEST_TRANSFORM)
         test_loader = DataLoader(
             test_dataset, 
