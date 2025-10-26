@@ -6,12 +6,15 @@ import torch
 import matplotlib.pyplot as plt
 from torch import nn, optim
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
 from dataset import get_adni_dataloader  
 from modules import GFNet  
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 
+best_val_acc = 0.0
+patience, counter = 10, 0
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -31,13 +34,13 @@ def main():
 
     # Optimizer and LR Scheduler
     optimizer = optim.Adam(model.parameters(), lr=base_lr)
-    #optimizer = AdamW(model.parameters(), 
-    #              lr=base_lr, 
-    #              weight_decay=1e-4, 
-    #              betas=(0.9, 0.999), 
-    #              eps=1e-8)
-    #scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=1e-6)
-    scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=20, T_mult=2, eta_min=1e-7)
+    # optimizer = AdamW(model.parameters(), 
+    #               lr=base_lr, 
+    #               weight_decay=1e-4, 
+    #               betas=(0.9, 0.999), 
+    #               eps=1e-8)
+    scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=1e-6)
+    # scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=20, T_mult=2, eta_min=1e-7)
 
     train_losses, val_losses = [], []
     train_accuracies, val_accuracies = [], []
@@ -53,6 +56,16 @@ def main():
               f'Train Loss: {train_losses[-1]:.4f}, Train Acc: {train_accuracies[-1]:.2f}, '
               f'Val Loss: {val_losses[-1]:.4f}, Val Acc: {val_accuracies[-1]:.2f}, '
               f'LR: {scheduler.get_last_lr()[0]:.6f}')
+        
+        if val_accuracies[-1] > best_val_acc:
+            best_val_acc = val_accuracies[-1]
+            torch.save(model.state_dict(), 'best_gfnet_model.pth')
+            counter = 0
+        else:
+            counter += 1
+            if counter >= patience:
+                print(f"Early stopping at epoch {epoch+1}")
+                break
 
     # Save Model
     torch.save(model.state_dict(), 'gfnet_model2.pth')
@@ -177,6 +190,3 @@ def plot_metrics(num_epochs, train_losses, val_losses, train_accuracies, val_acc
 
 if __name__ == '__main__':
     main()
-
-
-
