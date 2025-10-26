@@ -33,11 +33,13 @@ GFNet_ADNI_s4908581/
 ### **Design choices**
 #### **Model Architecture**
 I tried to apply residual connection to an individual block in order to increase stability.
-The below table shows the comparison of two models
+The below table shows the comparison of two models.
+
 | | Block without residual connection | Block with residual connection |
 |-------|-------|-------|
 | Test Accuracy | 75.30% | 74.37 |
-The below figures show the comparison of two architectures in the training process
+
+The below figures show the comparison of two architectures in the training process.
 
 Result shows that the stability of the two models is almost the same, but the test accuracy of block without residual connection is higher than the other one.
 
