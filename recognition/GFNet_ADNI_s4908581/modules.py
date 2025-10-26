@@ -139,12 +139,12 @@ class Block(nn.Module):
         # Apply normalization, global filtering, MLP, and DropPath
         # x = x + self.drop_path(self.mlp(self.norm2(self.filter(self.norm1(x)))))
         # return x
-        residual = x
+        # residual = x
         x = self.norm1(x)
         x = self.filter(x)
         x = self.norm2(x)
         x = self.mlp(x)
-        return residual + self.drop_path(x)
+        return self.drop_path(x)
         
     
 
@@ -279,5 +279,6 @@ class GFNet(nn.Module):
         x = self.final_dropout(x)
         x = self.head(x)
         return x
+
 
 
