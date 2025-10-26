@@ -144,7 +144,8 @@ class Block(nn.Module):
         x = self.filter(x)
         x = self.norm2(x)
         x = self.mlp(x)
-        return self.drop_path(x)
+        x = x + self.drop_path(self.mlp(self.norm2(self.filter(self.norm1(x)))))
+        return x
         
     
 
@@ -279,6 +280,7 @@ class GFNet(nn.Module):
         x = self.final_dropout(x)
         x = self.head(x)
         return x
+
 
 
 
