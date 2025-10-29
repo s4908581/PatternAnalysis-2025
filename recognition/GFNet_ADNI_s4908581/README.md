@@ -134,6 +134,7 @@ The X-axis value is $1-TNR$, and the y-axis value is $TPR$. The diagonal is the 
 This part are some comparisons I made to search for potential model improvement.
 ### **Model Architecture**
 1. I tried to change the number of blocks to remain accuracy while improving training efficiency.
+
 | Number of Blocks| 8 | 10 |
 |-------|-------|-------|
 | Test Accuracy | 74.94% | 75.31% |
