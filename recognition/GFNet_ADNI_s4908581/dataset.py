@@ -1,4 +1,7 @@
-""" This module handles the loading and data augmentation of ADNI dataset """
+""" 
+This module handles the loading and data augmentation of ADNI dataset 
+With reference to GavinSaiun's work: https://github.com/GavinSaiun/GFNet-Alzheimer-Detection 
+"""
 
 import torch
 from torch.utils.data import DataLoader, Dataset
