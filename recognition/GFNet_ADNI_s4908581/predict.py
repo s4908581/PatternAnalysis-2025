@@ -1,25 +1,26 @@
 """
-Evaluates a trained model on a test dataset, displays predictions, 
-and visualizes results.
+Script to evaluate a trained GFNet model on the ADNI test dataset and visualize predictions.
 """
 
 import torch
 from torch.utils.data import DataLoader
-from dataset import get_adni_dataloader, ADNIDataset, ADNI_ROOT_PATH, TEST_TRANSFORM  # Import data loader and dataset classes
-from modules import GFNet  # Import your model class
+from dataset import get_adni_dataloader, ADNIDataset, ADNI_ROOT_PATH, TEST_TRANSFORM 
+from modules import GFNet
 import random
 import matplotlib.pyplot as plt
 import math
+import numpy as np
+from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
+import seaborn as sns
 
 
 def evaluate_model(model, device, test_loader):
     """
-    Evaluate the model's accuracy on the test dataset.
-    
+    Evaluates the model on the test dataset and prints accuracy.
     Args:
-        model: Trained model to be evaluated.
-        device: Torch device (CPU or GPU).
-        test_loader (DataLoader): DataLoader for the test set.
+        model: Trained model to evaluate.
+        device (torch.device): Torch device (CPU or GPU) for computation.
+        test_loader (DataLoader): DataLoader for the test dataset.
     """
     model.eval()  
     correct = 0
@@ -36,17 +37,100 @@ def evaluate_model(model, device, test_loader):
     accuracy = 100 * correct / total
     print(f'Accuracy on the test set: {accuracy:.2f}%')
 
+def plot_confusion_matrix(model, device, test_loader):
+    """
+    Plots confusion matrix and classification report.
+    Args:
+        model: Trained model to evaluate.
+        device (torch.device): Torch device (CPU or GPU) for computation.
+        test_loader (DataLoader): DataLoader for the test dataset.
+    """
+    model.eval()
+    all_preds = []
+    all_labels = []
+    
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            _, preds = torch.max(outputs, 1)
+            
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+    
+    # calculate confusion matrix
+    cm = confusion_matrix(all_labels, all_preds)
+    classes = ['NC', 'AD']
+    
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                xticklabels=classes, yticklabels=classes)
+    plt.title('Confusion Matrix')
+    plt.ylabel('True Label')
+    plt.xlabel('Predicted Label')
+    plt.tight_layout()
+    plt.savefig('confusion_matrix.png', dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # Print classification report
+    print("\nClassification Report:")
+    print(classification_report(all_labels, all_preds, target_names=classes))
+    
+    return cm
+
+
+def plot_roc_curve(model, device, test_loader):
+    """
+    Plots ROC curve and calculates AUC score.
+    Args:
+        model: Trained model to evaluate.
+        device (torch.device): Torch device (CPU or GPU) for computation.
+        test_loader (DataLoader): DataLoader for the test dataset.
+    """
+    model.eval()
+    all_probs = []
+    all_labels = []
+    
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            probabilities = torch.softmax(outputs, dim=1)
+            
+            all_probs.extend(probabilities[:, 1].cpu().numpy())  # Probabilities for positive class
+            all_labels.extend(labels.cpu().numpy())
+    
+    # calculate ROC curve and AUC
+    fpr, tpr, thresholds = roc_curve(all_labels, all_probs)
+    roc_auc = auc(fpr, tpr)
+    
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, color='darkorange', lw=2, 
+             label=f'ROC curve (AUC = {roc_auc:.3f})')
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', 
+             label='Random Classifier')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig('roc_curve.png', dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    print(f"AUC Score: {roc_auc:.3f}")
+    return roc_auc
 
 def do_predictions(model, device: torch.device, num_predictions: int = 9, show_plot: bool = True):
     """
-    Randomly selects a number of samples from the test dataset,
-    makes predictions using the model, and displays.
-
+    Makes predictions on random samples from the test dataset and visualizes them.
     Args:
-        model: Trained model for making predictions.
+        model: Trained model to use for predictions.
         device (torch.device): Torch device (CPU or GPU) for computation.
-        num_predictions (int): Number of predictions to visualize (default: 9).
-        show_plot (bool): Flag to display the plot (default: True).
+        num_predictions (int): Number of random samples to predict and visualize.
+        show_plot (bool): Whether to display the plot interactively.
     """
 
     test_dataset = ADNIDataset(ADNI_ROOT_PATH, train=False, transform=TEST_TRANSFORM)
@@ -84,15 +168,21 @@ def main():
     print(f'Using device: {device}')
 
     model = GFNet(depth=8).to(device)
-    model.load_state_dict(torch.load('gfnet_model.pth')) # Load trained model weight
+    # Load the trained model weights
+    model.load_state_dict(torch.load('gfnet_model2.pth'))
     print("Model loaded successfully.")
 
     batch_size = 32  
-    test_loader = get_adni_dataloader(batch_size=batch_size, train=False)  # Get test data
+    # Get test DataLoader
+    test_loader = get_adni_dataloader(batch_size=batch_size, train=False) 
 
     evaluate_model(model, device, test_loader)
 
-    do_predictions(model, device, num_predictions=9, show_plot=True) # Make predictions and visualize
+    plot_confusion_matrix(model, device, test_loader)
+
+    plot_roc_curve(model, device, test_loader)
+    # Make and visualize predictions
+    do_predictions(model, device, num_predictions=9, show_plot=True) 
 
 if __name__ == "__main__":
     main()
