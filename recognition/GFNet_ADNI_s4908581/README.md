@@ -166,7 +166,7 @@ This loss function is PyTorch's default classification loss that directly maximi
 
 $$L_n = -w_{y_n}× \log \frac{exp(x_{n,y_n})}{\sum_{c=1}^{C}exp(x_{n,c})}$$
 
-where $x$ is the x is the output of the model (logits), $y$ is the target category index, $w_{y_n}$ is the weight of class ${y_n}$, $C$ is the number of classes. $N$ is the $n$th sample.
+where $x$ is the x is the output of the model (logits), $y$ is the target category index, $w_{y_n}$ is the weight of class ${y_n}$, $C$ is the number of classes. $N$ is the *n*th sample.
 
 - Loss function 2: Label Smooth Cross Entrophy
 This custom loss function implements ​​label smoothing​​. The idea of label smoothing is that do not consider the probability of the correct category as 1 and that of other categories as 0. Instead, slightly reduce the confidence level of the correct category and give some weight to other categories to enhance the generalization ability of the model, avoid overfitting or overconfidence.
@@ -175,7 +175,7 @@ This custom loss function implements ​​label smoothing​​. The idea of la
 
 $$L_n = (1 - \epsilon) \cdot \left[-\log(\frac{exp(x_{n,y_n})}{\sum_{c=1}^{C}exp(x_{n,c})})\right] + \epsilon \cdot \left[-\frac{1}{C} \sum_{c=1}^C \log(p_j) \right]$$
 
-where $x$ is the x is the output of the model (logits), $y$ is the target category index, $w_{y_n}$ is the weight of class ${y_n}$, $C$ is the number of classes. $N$ is the $n$th sample, $p_j$ is the predicted probability of class $j$, $\eplison$ is the smoothing parameter that controls the degree of label smoothing.
+where $x$ is the x is the output of the model (logits), $y$ is the target category index, $w_{y_n}$ is the weight of class ${y_n}$, $C$ is the number of classes. $N$ is the *n*th sample, $p_j$ is the predicted probability of class $j$, $\eplison$ is the smoothing parameter that controls the degree of label smoothing.
 
 In the training, the smoothing parameter​​ set to 0.1. The table below shows the comparison of the two loss functions.
 
