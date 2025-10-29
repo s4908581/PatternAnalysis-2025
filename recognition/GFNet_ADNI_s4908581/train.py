@@ -1,5 +1,6 @@
 """
 Training script for GFNet on the ADNI dataset for Alzheimer's disease classification.
+With reference to GavinSaiun's work: https://github.com/GavinSaiun/GFNet-Alzheimer-Detection 
 """
 
 import torch
