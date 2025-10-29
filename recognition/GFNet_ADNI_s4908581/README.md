@@ -156,7 +156,7 @@ The below figure show the comparison of two architectures in the training proces
 
 Result shows that the stability of the two models is almost the same, but the test accuracy of block without residual connection is higher than the other one. Remaining the initial architecture is a better choice. 
 
-I have also noticed that there are more complex architectures from different papers. Such as the GFNetPyramid architecture from paper [1] and the architecture with Dynamic Filter Former (DFFormer) from paper [3]. But these architectures takes much more time to train. I will try these models after submitting the report.
+I have also noticed that there are more complex architectures from different papers. Such as the GFNetPyramid architecture from [1] and the architecture with Dynamic Filter Former (DFFormer) from [3]. But these architectures takes much more time to train. I will try these models after submitting the report.
 
 ### **Loss function**
 I applied to different loss functions in training. Below are the details of the two loss function.
