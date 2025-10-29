@@ -1,10 +1,10 @@
 """
-This module implements a Global Filter Network (GFNet) using PyTorch, consisting of several components:
-- Mlp: A FeedForward network for processing input features.
-- GlobalFilter: A module that applies a global filtering operation in the Fourier domain.
-- Block: A building block that combines normalization, global filtering, and a feedforward network.
-- PatchEmbed: Converts images into patches for the network input.
-- GFNet: A deep neural network model that uses multiple blocks for image classification.
+This module defines components of a neural network architecture inspired by GFNet, including:
+    - Mlp: A feedforward neural network module.
+    - GlobalFilter: A module that applies global filtering using Fourier transforms.
+    - Block: A transformer block that combines normalization, global filtering, and MLP.
+    - PatchEmbed: A module that converts images into patch embeddings.
+    - GFNet: The main model class that integrates all components into a complete architecture for image classification.
 
 The code utilizes PyTorch's nn.Module as the base class and employs standard neural network layers and functions.
 """
@@ -20,11 +20,11 @@ import torch.fft
 
 class Mlp(nn.Module):
     """
-    A FeedForward Network (MLP) consisting of two linear layers with a non-linear activation in between.
+    A simple feedforward neural network module with two linear layers, an activation function and a dropout layer.
     Args:
         in_features (int): Number of input features.
-        hidden_features (int): Number of hidden features (optional).
-        out_features (int): Number of output features (optional).
+        hidden_features (int): Number of hidden features.
+        out_features (int): Number of output features.
         act_layer (nn.Module): Activation layer (default: GELU).
         drop (float): Dropout rate (default: 0.0).
     """
@@ -36,19 +36,18 @@ class Mlp(nn.Module):
         self.fc1 = nn.Linear(in_features, hidden_features)
         self.act = act_layer()
         self.fc2 = nn.Linear(hidden_features, out_features)
-        # Dropout layer to avoid overfitting
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
         """
-        Forward pass of the MLP.
+        The forward pass of the Mlp module.
         Args:
             x (torch.Tensor): Input tensor.
         Returns:
             torch.Tensor: Output tensor after processing.
         """
 
-        # Apply linear layer, activation, and dropout
+        # Apply first linear layer, activation, dropout, second linear layer, and dropout
         x = self.fc1(x)
         x = self.act(x)
         x = self.drop(x)
@@ -58,7 +57,7 @@ class Mlp(nn.Module):
     
 class GlobalFilter(nn.Module):
     """
-    A global filtering module using Fourier transforms for spatial manipulation of input features.
+    A module that applies global filtering using Fourier transforms.
     Args:
         dim (int): Dimensionality of the input features.
         h (int): Height of the filter (default: 14).
@@ -67,23 +66,23 @@ class GlobalFilter(nn.Module):
 
     def __init__(self, dim, h=14, w=8):
         super().__init__()
-        # Complex weights initialized for the Fourier filtering
+        # Initialize complex weights for the filter
         self.complex_weight = nn.Parameter(torch.randn(h, w, dim, 2, dtype=torch.float32) * 0.02)
         self.w = w
         self.h = h
 
     def forward(self, x, spatial_size=None):
         """
-        Forward pass of the GlobalFilter.
+        Forward pass of the GlobalFilter module.
         Args:
             x (torch.Tensor): Input tensor of shape (B, N, C).
-            spatial_size (tuple): Optional spatial size of the input.
+            spatial_size (tuple): Spatial dimensions (height, width) of the input.
         Returns:
-            torch.Tensor: Filtered output tensor.
+            torch.Tensor: Output tensor after applying global filtering.
         """
 
         B, N, C = x.shape
-        # Determine spatial size if not provided
+        # Determine spatial dimensions
         if spatial_size is None:
             a = b = int(math.sqrt(N))
         else:
@@ -91,31 +90,32 @@ class GlobalFilter(nn.Module):
 
         x = x.view(B, a, b, C)
 
-        # # Ensure the tensor is in float32 format for compatibility with FFT operations.
+        # Convert to float32 for FFT operations
         x = x.to(torch.float32)
 
-        # # Apply the 2D Fast Fourier Transform (FFT)
+        # Apply the 2D FFT to the input tensor
+        # This transforms the input to the frequency domain
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
         weight = torch.view_as_complex(self.complex_weight)
         x = x * weight
 
-        # # Apply the inverse 2D FFT to bring the result back to the spatial domain
+        # Apply the inverse 2D FFT to transform back to the spatial domain
         x = torch.fft.irfft2(x, s=(a, b), dim=(1, 2), norm='ortho')
         x = x.reshape(B, N, C)
         return x
 
 class Block(nn.Module):
     """
-    A transformer block that includes normalization, a global filter, and an MLP.
+    This module is a transformer block that combines normalization, global filtering, and MLP.
     Args:
         dim (int): Dimensionality of the input features.
-        mlp_ratio (float): Ratio of MLP hidden dimension to embedding dimension.
-        drop (float): Dropout rate.
-        drop_path (float): Drop path rate.
+        mlp_ratio (float): Ratio of MLP hidden dimension to embedding dimension (default: 4.0).
+        drop (float): Dropout rate (default: 0.0).
+        drop_path (float): Stochastic depth rate (default: 0.0).
         act_layer (nn.Module): Activation layer (default: GELU).
         norm_layer (nn.Module): Normalization layer (default: LayerNorm).
-        h (int): Height of the filter (default: 14).
-        w (int): Width of the filter (default: 8).
+        h (int): Height for the GlobalFilter (default: 14).
+        w (int): Width for the GlobalFilter (default: 8).
     """
 
     def __init__(self, dim, mlp_ratio=4., drop=0., drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, h=14, w=8):
@@ -129,31 +129,32 @@ class Block(nn.Module):
 
     def forward(self, x):
         """
-        Forward pass of the Block.
+        Forward pass of the Block module.
         Args:
-            x (torch.Tensor): Input tensor.
+            x (torch.Tensor): Input tensor of shape (B, N, C).
         Returns:
             torch.Tensor: Output tensor after processing.
         """
 
-        # Apply normalization, global filtering, MLP, and DropPath
+        # The forward pass applies normalization, global filtering, and MLP with residual connections
+        # With reference to the original GFNet paper
         x = x + self.drop_path(self.mlp(self.norm2(self.filter(self.norm1(x)))))
         return x
         # residual = x
-        #x = self.norm1(x)
-        #x = self.filter(x)
-        #x = self.norm2(x)
-        #x = self.mlp(x)
-        #x = x + self.drop_path(self.mlp(self.norm2(self.filter(self.norm1(x)))))
-        #return x
+        # x = self.norm1(x)
+        # x = self.filter(x)
+        # x = self.norm2(x)
+        # x = self.mlp(x)
+        # x = x + self.drop_path(self.mlp(self.norm2(self.filter(self.norm1(x)))))
+        # return x
         
     
 
 class PatchEmbed(nn.Module):
     """
-    Image to Patch Embedding.
+    This module converts an image into patch embeddings using a convolutional layer.
     Args:
-        img_size (int or tuple): Input image size.
+        img_size (int or tuple): Size of the input image.
         patch_size (int or tuple): Size of each patch.
         in_chans (int): Number of input channels.
         embed_dim (int): Embedding dimension.
@@ -163,48 +164,50 @@ class PatchEmbed(nn.Module):
         super().__init__()
         img_size = to_2tuple(img_size)
         patch_size = to_2tuple(patch_size)
-        # Calculate number of patches in the image
-        num_patches = (img_size[1] // patch_size[1]) * (img_size[0] // patch_size[0])
+        num_patches = (img_size[1] // patch_size[1]) * (img_size[0] // patch_size[0]) # Calculate number of patches in the image
         self.img_size = img_size
         self.patch_size = patch_size
         self.num_patches = num_patches
-        # Convolutional layer for converting image into patch embeddings
+        # Convolutional layer to extract patches and project to embedding dimension
         self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
 
     def forward(self, x):
         """
-        Forward pass of the PatchEmbed layer.
+        Forward pass of the PatchEmbed module.
         Args:
-            x (torch.Tensor): Input tensor of shape (B, C, H, W).
+            x (torch.Tensor): Input image tensor of shape (B, C, H, W).
         Returns:
-            torch.Tensor: Flattened patch embeddings.
+            torch.Tensor: Patch embeddings of shape (B, N, embed_dim).
         """
 
         B, C, H, W = x.shape
         
         assert H == self.img_size[0] and W == self.img_size[1], \
             f"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]})."
-        # Project image patches and flatten the output
+        # Apply convolution to extract patches and reshape
         x = self.proj(x).flatten(2).transpose(1, 2)
         return x
 
 class GFNet(nn.Module):
     """
-    GFNet Model with Patch Embedding, Transformer Blocks, and a Classification Head.
+    This module defines the GFNet architecture for image classification.
     Args:
-        img_size (int or tuple): Input image size.
-        patch_size (int or tuple): Size of each patch.
-        in_chans (int): Number of input channels.
-        num_classes (int): Number of classes for classification.
-        embed_dim (int): Embedding dimension.
-        depth (int): Depth of the transformer.
-        mlp_ratio (float): Ratio of MLP hidden dimension to embedding dimension.
-        drop_rate (float): Dropout rate.
-        drop_path_rate (float): Stochastic depth rate.
-        norm_layer (nn.Module): Normalization layer.
+        img_size (int): Size of the input image (default: 224).
+        patch_size (int): Size of each patch (default: 16).
+        in_chans (int): Number of input channels (default: 1).
+        num_classes (int): Number of output classes (default: 1000).
+        embed_dim (int): Embedding dimension (default: 768).
+        depth (int): Number of transformer blocks (default: 8).
+        mlp_ratio (float): Ratio of MLP hidden dimension to embedding dimension (default: 4.0).
+        representation_size (int): Size of the representation layer (default: None).
+        uniform_drop (bool): Whether to use uniform drop path rate (default: False).
+        drop_rate (float): Dropout rate (default: 0.0).
+        drop_path_rate (float): Stochastic depth rate (default: 0.0).
+        norm_layer (nn.Module): Normalization layer (default: LayerNorm).
+        dropcls (float): Dropout rate for classification head (default: 0.0).
     """
     
-    def __init__(self, img_size=224, patch_size=16, in_chans=1, num_classes=1000, embed_dim=768, depth=18,
+    def __init__(self, img_size=224, patch_size=16, in_chans=1, num_classes=1000, embed_dim=768, depth=8,
                  mlp_ratio=4., representation_size=None, uniform_drop=False,
                  drop_rate=0., drop_path_rate=0., norm_layer=None, 
                  dropcls=0):
@@ -212,7 +215,7 @@ class GFNet(nn.Module):
         super().__init__()
         self.num_classes = num_classes
         self.num_features = self.embed_dim = embed_dim  
-        norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-5)
+        norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-6)
 
         # Patch Embedding
         self.patch_embed = PatchEmbed(
@@ -241,10 +244,11 @@ class GFNet(nn.Module):
         self.final_dropout = nn.Identity()
         trunc_normal_(self.pos_embed, std=.02)
         self.apply(self._init_weights)
+        
 
     def _init_weights(self, m):
         """
-        Initialize weights for the network components.
+        Initialize weights for the model.
         """
         
         if isinstance(m, nn.Linear):
@@ -257,7 +261,7 @@ class GFNet(nn.Module):
 
     def forward_features(self, x):
         """
-        Forward pass for extracting features from the input tensor.
+        Forward pass through the feature extraction layers.
         """
 
         B = x.shape[0]
@@ -280,8 +284,3 @@ class GFNet(nn.Module):
         x = self.final_dropout(x)
         x = self.head(x)
         return x
-
-
-
-
-
