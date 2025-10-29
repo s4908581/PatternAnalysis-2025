@@ -164,7 +164,7 @@ I applied to different loss functions in training. Below are the details of the 
 - Loss function 1: Standard Cross Entrophy
 This loss function is PyTorch's default classification loss that directly maximizes true class probability. The loss $L_n$ is calculated as below:
 
-$$L_n = -w_{y_n}× \log \frac{exp(x_{n,y_n})}{\sum_{c=1}^{C}exp(x_n,i)}$$
+$$L_n = -w_{y_n}× \log \frac{exp(x_{n,y_n})}{\sum_{c=1}^{C}exp(x_{n,c})}$$
 
 where $x$ is the x is the output of the model (logits), $y$ is the target category index, $w_{y_n}$ is the weight of class ${y_n}$, $C$ is the number of classes. $N$ is the $n$th sample.
 
@@ -173,7 +173,7 @@ This custom loss function implements ​​label smoothing​​. The idea of la
 
 - It represents the probability mass redistributed from true class. The loss $L_n$ is calculated as below.
 
-$$L_n = (1 - \epsilon) \cdot \left[-\log(\frac{exp(x_{n,y_n})}{\sum_{c=1}^{C}exp(x_n,i)})\right] + \epsilon \cdot \left[-\frac{1}{C} \sum_{c=1}^C \log(p_j) \right]$$
+$$L_n = (1 - \epsilon) \cdot \left[-\log(\frac{exp(x_{n,y_n})}{\sum_{c=1}^{C}exp(x_{n,c})})\right] + \epsilon \cdot \left[-\frac{1}{C} \sum_{c=1}^C \log(p_j) \right]$$
 
 where $x$ is the x is the output of the model (logits), $y$ is the target category index, $w_{y_n}$ is the weight of class ${y_n}$, $C$ is the number of classes. $N$ is the $n$th sample, $p_j$ is the predicted probability of class $j$, $\eplison$ is the smoothing parameter that controls the degree of label smoothing.
 
