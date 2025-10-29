@@ -7,6 +7,7 @@ This module defines components of a neural network architecture inspired by GFNe
     - GFNet: The main model class that integrates all components into a complete architecture for image classification.
 
 The code utilizes PyTorch's nn.Module as the base class and employs standard neural network layers and functions.
+With reference to raoyongming's work: https://github.com/raoyongming/GFNet
 """
 
 import torch
