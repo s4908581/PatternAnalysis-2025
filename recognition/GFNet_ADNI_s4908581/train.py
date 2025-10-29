@@ -1,5 +1,5 @@
 """
-Trains and validates a deep learning model (GFNet) using the ADNI dataset.
+Training script for GFNet on the ADNI dataset for Alzheimer's disease classification.
 """
 
 import torch
@@ -25,9 +25,11 @@ class LabelSmoothCE(nn.Module):
         confidence = 1.0 - self.smoothing
         log_probs = F.log_softmax(inputs, dim=-1)
         
+        # Negative log likelihood loss
         nll_loss = -log_probs.gather(dim=-1, index=targets.unsqueeze(1))
         nll_loss = nll_loss.squeeze(1)
         
+        #  Smooth loss
         smooth_loss = -log_probs.mean(dim=-1)
         
         loss = confidence * nll_loss + self.smoothing * smooth_loss
@@ -39,14 +41,14 @@ def main():
 
     # Hyperparameters
     batch_size = 32
-    base_lr = 0.0005    
+    base_lr = 0.001    
     num_epochs = 120 
     num_workers = 4
 
     best_val_acc = 0.0
     patience, counter = 10, 0
 
-    # Load the ADNI dataset using DataLoader for training and validation
+    # Data Loaders for ADNI dataset 
     train_loader, val_loader = get_adni_dataloader(batch_size=batch_size, train=True, num_workers=num_workers)
 
     model = GFNet(depth=8).to(device)  
@@ -70,7 +72,7 @@ def main():
         train_one_epoch(epoch, model, train_loader, criterion, optimizer, scheduler, train_losses, train_accuracies, device)
         validate_one_epoch(epoch, model, val_loader, criterion, val_losses, val_accuracies, device)
 
-        # Update the learning rate scheduler
+        # Update LR scheduler at epoch end
         scheduler.step(epoch + 1)
 
         print(f'Epoch [{epoch + 1}/{num_epochs}], '
@@ -78,15 +80,15 @@ def main():
               f'Val Loss: {val_losses[-1]:.4f}, Val Acc: {val_accuracies[-1]:.2f}, '
               f'LR: {scheduler.get_last_lr()[0]:.6f}')
         
-        if val_accuracies[-1] > best_val_acc:
-            best_val_acc = val_accuracies[-1]
-            torch.save(model.state_dict(), 'best_gfnet_model.pth')
-            counter = 0
-        else:
-            counter += 1
-            if counter >= patience:
-                print(f"Early stopping at epoch {epoch+1}")
-                break
+        # if val_accuracies[-1] > best_val_acc:
+        #     best_val_acc = val_accuracies[-1]
+        #     torch.save(model.state_dict(), 'best_gfnet_model.pth')
+        #     counter = 0
+        # else:
+        #     counter += 1
+        #     if counter >= patience:
+        #         print(f"Early stopping at epoch {epoch+1}")
+        #         break
 
     # Save Model
     torch.save(model.state_dict(), 'gfnet_model2.pth')
@@ -96,14 +98,13 @@ def main():
 def train_one_epoch(epoch, model, train_loader, criterion, optimizer, scheduler, train_losses, train_accuracies, device):
     """
     Train the model for one epoch.
-
     Args:
         epoch (int): Current epoch number.
         model (nn.Module): The neural network model.
         train_loader (DataLoader): DataLoader for the training set.
         criterion (nn.Module): Loss function used for training.
-        optimizer (Optimizer): Optimizer used for model parameter updates.
-        scheduler (Scheduler): Learning rate scheduler.
+        optimizer (optim.Optimizer): Optimizer for updating model weights.
+        scheduler (lr_scheduler): Learning rate scheduler.
         train_losses (list): List to store training losses.
         train_accuracies (list): List to store training accuracies.
         device (torch.device): Device for computation (CPU or GPU).
@@ -114,7 +115,7 @@ def train_one_epoch(epoch, model, train_loader, criterion, optimizer, scheduler,
     correct = 0
     total = 0
 
-    # Iterate through batches of training data
+    # Iterate over batches
     for images, labels in train_loader:
         images, labels = images.to(device), labels.to(device)
 
@@ -124,7 +125,7 @@ def train_one_epoch(epoch, model, train_loader, criterion, optimizer, scheduler,
         loss.backward()
         optimizer.step()
 
-        # Update the learning rate based on the scheduler
+        # Update learning rate
         scheduler.step()
 
         running_loss += loss.item()
@@ -132,7 +133,7 @@ def train_one_epoch(epoch, model, train_loader, criterion, optimizer, scheduler,
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
-    # Add loss and accuracy
+    # Calculate average loss and accuracy for the epoch
     train_losses.append(running_loss / len(train_loader))
     train_accuracies.append(100 * correct / total)
 
@@ -140,7 +141,6 @@ def train_one_epoch(epoch, model, train_loader, criterion, optimizer, scheduler,
 def validate_one_epoch(epoch, model, val_loader, criterion, val_losses, val_accuracies, device):
     """
     Validate the model for one epoch.
-
     Args:
         epoch (int): Current epoch number.
         model (nn.Module): The neural network model.
@@ -159,7 +159,7 @@ def validate_one_epoch(epoch, model, val_loader, criterion, val_losses, val_accu
         for images, labels in val_loader:
             images, labels = images.to(device), labels.to(device)
 
-            # forward pass through model
+            # Forward pass
             outputs = model(images)
             loss = criterion(outputs, labels)
 
@@ -168,20 +168,21 @@ def validate_one_epoch(epoch, model, val_loader, criterion, val_losses, val_accu
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
+    # Calculate average loss and accuracy for the epoch
     val_losses.append(running_loss / len(val_loader))
     val_accuracies.append(100 * correct / total)
 
 
 def plot_metrics(num_epochs, train_losses, val_losses, train_accuracies, val_accuracies):
     """
-    Plot and save training and validation losses and accuracies over epochs.
-
+    Plot training and validation losses and accuracies over epochs.
     Args:
-        num_epochs (int): Number of epochs the model was trained for.
+        num_epochs (int): Total number of epochs.
         train_losses (list): List of training losses per epoch.
         val_losses (list): List of validation losses per epoch.
         train_accuracies (list): List of training accuracies per epoch.
         val_accuracies (list): List of validation accuracies per epoch.
+
     """
 
     plt.figure(figsize=(12, 5))
@@ -204,12 +205,10 @@ def plot_metrics(num_epochs, train_losses, val_losses, train_accuracies, val_acc
     plt.ylabel('Accuracy (%)')
     plt.legend()
 
-    # Save the plots as a PNG file
+    # Save plots
     plt.tight_layout()
     plt.savefig(f"Training_vs_validation.png")
 
 
 if __name__ == '__main__':
     main()
-
-
