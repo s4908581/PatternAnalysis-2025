@@ -1,4 +1,4 @@
-# **Classify Alzheimer’s disease of the ADNI brain data using GFNet**
+# **GFNet-based Classification of Alzheimer's Disease on ADNI brain data**
 **Author**: Wenyue Guo (s4908581)  
 **Project Number**: 8  
 **Difficulty level**: Hard  
