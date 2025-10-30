@@ -56,7 +56,7 @@ The `ADNIDataset` class is able to load both training set and testing set. The i
 - 1 is for Alzheimer's Disease (AD)
 - 0 is for Normal Control (NC)
 
-When the function `__getitem__` is called, an grayscale image and its corresponding label will be retrieved by index. When loading the training set, it will be split into 80% training set and 20% validation set. This is to improve the generalization ability of the model. This percentage of the split is also commonly used in other tasks.
+When the function `__getitem__` is called, a grayscale image and its corresponding label will be retrieved by index. When loading the training set, it will be split into 80% training set and 20% validation set. This is to improve the generalization ability of the model. This percentage of the split is also commonly used in other tasks.
 
 ### **Data Preprocessing and Augmentation**
 In the training set, the data is preprocessed and augmented as following:
