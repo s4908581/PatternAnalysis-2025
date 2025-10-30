@@ -11,7 +11,7 @@
 **Keyword**: Alzheimer's Disease, ADNI Dataset, GFNet, Medical Image Classification, Deep Learning  
 
 ## **Project Overview**
-Alzheimer's disease is a progressive neurodegenerative disorder characterized by cognitive decline, memory loss, and behavioral changes. Early and accurate diagnosis is crucial for timely intervention and treatment planning. This project addresses the challenging task of Alzheimer's disease classification from brain MRI scans. It focuses on distinguishing between Alzheimer's disease (AD) and Cognitive Normal (CN) subjects. The primary objective of this project is to develop and implement a ​​GFNet (Global Filter Network)​​ based deep learning framework for automated classification of Alzheimer's disease using structural MRI data from the Alzheimer's Disease Neuroimaging Initiative (ADNI) dataset. GFNet's innovative use of global filters in the frequency domain provides enhanced capability to capture long-range dependencies in medical images, making it particularly suitable for analyzing complex neuroanatomical patterns associated with Alzheimer's pathology. The implemented GFNet-based solution achieves a ​​test accuracy of **75.83**, demonstrating the model's ability to learn meaningful representations from brain MRI data. 
+Alzheimer's disease is a progressive neurodegenerative disorder characterized by cognitive decline, memory loss, and behavioral changes. Early and accurate diagnosis is crucial for timely intervention and treatment planning. This project addresses the challenging task of Alzheimer's disease classification from brain MRI scans. It focuses on distinguishing between Alzheimer's disease (AD) and Cognitive Normal (CN) subjects. The primary objective of this project is to develop and implement a deep learning framework ​​based on GFNet (Global Filter Network) for automated classification of Alzheimer's disease using structural MRI data from the Alzheimer's Disease Neuroimaging Initiative (ADNI) dataset. GFNet's innovative use of global filters in the frequency domain provides enhanced capability to capture long-range dependencies in medical images, making it well-suited for​ analyzing complex neuroanatomical patterns associated with Alzheimer's pathology. The implemented GFNet-based solution achieves a ​​test accuracy of **75.83%**, demonstrating the model's ability to learn meaningful representations from brain MRI data. 
 
 ## **Model Architecture**
 ### **Model Description**
@@ -23,13 +23,13 @@ GFNet (Global Filter Networks) represents an innovative vision architecture. It 
 
 Patch Embedding: GFNet divides the input image into non-overlapping patches of size *H* × *W*. Each patch is flattened into a vector with a dimension of *D*. This process enables local feature capture while reducing computational complexity.
 
-Global Filter Layer: GFNet replaces the self-attention layer in ViTs with three key operations. First is a 2D discrete Fourier transform that converts spatial features to frequency domain. Second is an element-wise multiplication between frequency-domain features and learnable global filters. Third is 2D inverse Fourier transform, which transforms the data back to spatial domain. The overall complexity time of this operation is O(L log L)
+Global Filter Layer: GFNet replaces the self-attention layer in ViTs with three key operations. First is a 2D discrete Fourier transform that converts spatial features to frequency domain. Second is an element-wise multiplication between frequency-domain features and learnable global filters. Third is 2D inverse Fourier transform, which transforms the data back to spatial domain. The overall time complexity​​ of this operation is O(L log L)
 
 FFN (Feed Forward Network): The output tokens from the Global Filter Layer are processed by a Feed forward network. The process contains MLP (Multilayer Perceptrons) with layer normalization. This component applies non-linear transformations to refine the extracted features and enhance the model's representational capacity.
 
 Global Average Pooling and Linear Classifier: The final stage aggregates processed tokens through global average pooling, and produces a compact feature vector that summarizes the entire input. This vector then passes through a linear classifier that outputs probability scores for each disease category (Alzheimer's vs. Cognitive Normal).
 
-In the architecture, a block contains global filter layer and FFN. For each epoch, data goes patch embedding, then passes *N* sequential blocks, and finaaly goes to global average pooling and linear classfier. The block number *N* is adjustable for different tasks. 
+In the architecture, a block contains global filter layer and FFN. For each epoch, data goes patch embedding, then passes *N* sequential blocks, and finally goes to global average pooling and linear classfier. The block number *N* is adjustable for different tasks. 
 
 ### **Why choose GFNet**
 Compared with traditional CNNS and ViT, GFNet has the following advantages:
@@ -46,7 +46,7 @@ The preprocessed dataset is downloaded from `/home/groups/comp3710/ADNI/AD_NC`. 
 | Training set | 10,400 | 11,120 |
 | Testing set | 4,460 | 4,540 |
 
-The distribution of the dataset shows that the number of the two categories are similar. There is no need to consider category imbalance. 
+The distribution of the dataset shows that the number of the two categories are similar. There is no need to consider class imbalance. 
 ### **Data Loading**
 The dataset is downloaded from Rangpur HPC. The path is as following:
 
@@ -95,10 +95,10 @@ The result of training is shown in the figure:
 
 ![Fig2: Loss and accuracy of training and validation](Figures/Training_vs_validation.png)
 
-Result shows that the training accuracy can achieve over 85%, and the validation accuracy can achieve over 80%. The training loss first decreasely rapidly, and then the growth rate gradually decreases. The validation loss follows a similar trend. The gap between training loss and validation loss is small and remains stable in the majority training process. This shows that the model has a good generalization capability and robustness. However, the gap increases in the final stage of training. This is probably bacause the model experienced slight overfitting in the later stage of training. The reason is that the learning rate may be too low in the later stage, and the number of epochs is too high to fit the model. A possible solution is to reduce number of epochs. In my code, I added early stopping for improvement. The early stopping is disabled to show the whole training process, the model stops in epoch 104 in another trial. Despite this, the model can effectively learn from the training data and can maintain its performance in validation data.
+Result shows that the training accuracy can achieve over 85%, and the validation accuracy can achieve over 80%. The training loss first decreasely rapidly, and then the ​​rate of decrease gradually slows. The validation loss follows a similar trend. The gap between training loss and validation loss is small and remains stable in the majority training process. This shows that the model has a good generalization capability and robustness. However, the gap increases in the final stage of training. This is probably because the model experienced slight overfitting in the later stage of training. The reason is that the learning rate may be too low in the later stage, and the number of epochs is too high, leading to overfitting. A possible solution is to reduce number of epochs. In my code, I added early stopping for improvement. The early stopping is disabled to show the whole training process, the model stops at epoch 104 in another trial. Despite this, the model can effectively learn from the training data and maintains its performance in validation data.
 
 ### **Testing Result**
-The test data are from testing set. The accuracy of the model is **75.83%**. The result indicates that the model has a reasonable performance when meeting new data and has a good generalization ability. 
+The test data are from testing set. The accuracy of the model is **75.83%**. The result indicates that the model has a reasonable performance when meeting unseen data, demonstrating good generalization ability. 
 
 The visualization of the performance are shown below.
 #### **Actual label vs. Predicted label**
@@ -112,7 +112,7 @@ The plot below shows the confusion matrix of the testing set.
 
 ![Fig4: Confusion matrix](Figures/confusion_matrix.png)
 
-For the NC category, which represents healthy people (without AD), 3,954 out of 4,540 samples are correctly recognized, and 586 out of 4540 are misjudged as AD. For the AD category, which represents patients (with AD), 2,829 out of 4,460 are correctly recognized as patients, and 1,631 out of 4,460 missed diagnosis. The missed diagnosis of patients is the main types of errors. For every 3 AD patients missed, only 1 healthy person is misdiagnosed. This shows that the model adopts conservative diagnostic strategies. This avoids excessive medical treatment but will possibly delay treatment.
+For the NC category, which represents healthy people (without AD), 3,954 out of 4,540 samples are correctly recognized, and 586 out of 4540 are misjudged as AD. For the AD category, which represents patients (with AD), 2,829 out of 4,460 are correctly recognized as patients, and 1,631 out of 4,460 missed diagnosis. The false negatives​​ (missed diagnoses) of patients is the main types of errors. For every 3 AD patients missed, only 1 healthy person is misdiagnosed. This shows that the model adopts conservative diagnostic strategies. This approach ​​avoids unnecessary treatment​​ but may delay intervention for some patients.
 
 The sensitivity (true positive rate) of the matrix is calculated as below:
 
@@ -122,14 +122,14 @@ where TP represents the number of samples correctly identified as AD, and FN rep
 
 $$TNR = \frac{TN}{FP + TN}$$
 
-where TN represents the number of samples correctly identified as NC, and FP represents the number of NC samples that are misjudgedas as AD. The model's value of sensitivity is **63.4%**, and the value of specificity is **87.1%**. The model has a high specificity, indicating that the model is very cautious and rarely misdiagnoses healthy individuals as having AD. But the model has a moderate sensitivity, indicating it will miss a considerable number of true AD patients. The result indicates that this is a conservative diagnostic model which shows obvious specific priority features.
+where TN represents the number of samples correctly identified as NC, and FP represents the number of NC samples that are misjudgedas as AD. The model's value of sensitivity is **63.4%**, and the value of specificity is **87.1%**. The model has a high specificity, indicating that the model is very cautious and rarely misdiagnoses healthy individuals as having AD. But the model has a moderate sensitivity, indicating it will miss a considerable number of true AD patients. The result indicates that the model adopts a ​​conservative diagnostic strategy that prioritizes specificity.
 
 #### **ROC Curve**
 The plot below shows the ROC (Receiver Operating Characteristic) curve. 
 
 ![Fig5: ROC Curve](Figures/roc_curve.png)
 
-The X-axis value is $1-TNR$, and the y-axis value is $TPR$. The diagonal is the performance benchmark of randomly guess. The curve first rise rapidly and then smooth, showing the model has high sensitive but average specificity. The result is the same as the result in previous section. AUC (Area Under Curve) score is the area under the ROC curve. The larger the value, the better performance the model has. The AUC score of the testing set is **0.820**. This shows that the model has a good discriminatory ability and is significantly better than random guessing.
+The X-axis value is $1-TNR$, and the y-axis value is $TPR$. The diagonal is the performance benchmark of randomly guess. The curve first rise rapidly and then smooth, showing the model has ​​higher specificity than sensitivity. The result is the same as the result in previous section. AUC (Area Under Curve) score is the area under the ROC curve. The larger the value, the better performance the model has. The AUC score of the testing set is **0.820**. This shows that the model has a good discriminatory ability and is significantly better than random guessing.
 ## **Design choices**
 This part are some comparisons I made to search for potential model improvement.
 ### **Model Architecture**
@@ -139,7 +139,7 @@ This part are some comparisons I made to search for potential model improvement.
 |-------|-------|-------|
 | Test Accuracy | 74.94% | 75.31% |
 
-The result shows that with an increased number of blocks, efficiency can be improved. However, it takes about 6 hours to train for the architecture with 8 blocks, while it takes about 7 hours and a half to train the 10 block one. Considering the effeciency, I think 8 blocks is good enough for the task.
+The result shows that with an increased number of blocks, efficiency can be improved. However, training the 8-block architecture took approximately 6 hours, compared to about 7.5 hours for the 10-block version. Considering the effeciency, I think 8 blocks is good enough for the task.
 
 2. I also tried to apply residual connection to an individual block in order to increase stability.
 The below table shows the comparison of two models.
@@ -269,3 +269,5 @@ For local machine (The code is tested on local machine):
 [4] PyTorch, "CrossEntropyLoss — PyTorch 2.9 documentation," 2024. [Online]. Available: https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html 
 
 [5] GavinSaiun, "GFNet-Alzheimer-Detection", 2025. [Online]. Available: https://github.com/GavinSaiun/GFNet-Alzheimer-Detection [Accessed: Oct. 29, 2024]
+
+[6] OpenAI. (2023). ChatGPT (Mar 14 version) [Large language model]. https://chat.openai.com/chat
