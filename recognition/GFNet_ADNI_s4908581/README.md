@@ -112,7 +112,7 @@ The plot below shows the confusion matrix of the testing set.
 
 ![Fig4: Confusion matrix](Figures/confusion_matrix.png)
 
-For the NC category, which represents healthy people (without AD), 3,954 out of 4,540 samples are correctly recognized, and 586 out of 4540 are misjudged as AD. For the AD category, which represents patients (with AD), 2,829 out of 4,460 are correctly recognized as patients, and 1,631 out of 4,460 missed diagnosis. The false negatives​​ (missed diagnoses) of patients is the main types of errors. For every 3 AD patients missed, only 1 healthy person is misdiagnosed. This shows that the model adopts conservative diagnostic strategies. This approach ​​avoids unnecessary treatment​​ but may delay intervention for some patients.
+For the NC category, which represents healthy people (without AD), 3,954 out of 4,540 samples are correctly recognized, and 586 out of 4540 are misjudged as AD. For the AD category, which represents patients (with AD), 2,829 out of 4,460 are correctly recognized as patients, and 1,631 out of 4,460 missed diagnoses. The false negatives​​ (missed diagnoses) of patients is the main types of errors. For every 3 AD patients missed, only 1 healthy person is misdiagnosed. This shows that the model adopts conservative diagnostic strategies. This approach ​​avoids unnecessary treatment​​ but may delay intervention for some patients.
 
 The sensitivity (true positive rate) of the matrix is calculated as below:
 
@@ -122,7 +122,7 @@ where TP represents the number of samples correctly identified as AD, and FN rep
 
 $$TNR = \frac{TN}{FP + TN}$$
 
-where TN represents the number of samples correctly identified as NC, and FP represents the number of NC samples that are misjudgedas as AD. The model's value of sensitivity is **63.4%**, and the value of specificity is **87.1%**. The model has a high specificity, indicating that the model is very cautious and rarely misdiagnoses healthy individuals as having AD. But the model has a moderate sensitivity, indicating it will miss a considerable number of true AD patients. The result indicates that the model adopts a ​​conservative diagnostic strategy that prioritizes specificity.
+where TN represents the number of samples correctly identified as NC, and FP represents the number of NC samples that are misjudged as AD. The model's value of sensitivity is **63.4%**, and the value of specificity is **87.1%**. The model has a high specificity, indicating that the model is very cautious and rarely misdiagnoses healthy individuals as having AD. But the model has a moderate sensitivity, indicating it will miss a considerable number of true AD patients. The result indicates that the model adopts a ​​conservative diagnostic strategy that prioritizes specificity.
 
 #### **ROC Curve**
 The plot below shows the ROC (Receiver Operating Characteristic) curve. 
