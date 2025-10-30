@@ -162,7 +162,7 @@ Result shows that the stability of the two models is almost the same, but the te
 I have also noticed that there are more complex architectures from different papers. Such as the GFNetPyramid architecture from [1] and the architecture with Dynamic Filter Former (DFFormer) from [3]. But these architectures takes much more time to train. I will try these models after submitting the report.
 
 ### **Loss function**
-I applied to different loss functions in training. Below are the details of the two loss function.
+I applied to different loss functions in training. Below are the details of the two loss functions.
 
 - Loss function 1: Standard Cross Entropy
 This loss function is PyTorch's default classification loss that directly maximizes true class probability. The loss $L_n$ is calculated as below:
