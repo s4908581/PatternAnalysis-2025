@@ -148,11 +148,14 @@ The below table shows the comparison of two models.
 |-------|-------|-------|
 | Test Accuracy | 75.30% | 74.37% |
 
-The below figure show the comparison of two architectures in the training process.
+The below figure show the training and validation result of initial version.
 
-![Fig6: Training and validation result of residual connection version](Figures/Training_vs_validation_residual.png)
+![Fig6: Training and validation result of initial version](Figures/Training_vs_validation_initial.png)
 
-![Fig7: Training and validation result of initial version](Figures/Training_vs_validation_initial.png)
+The below figure show the training and validation result of residual connection version.
+
+![Fig7: Training and validation result of residual connection version](Figures/Training_vs_validation_residual.png)
+
 
 Result shows that the stability of the two models is almost the same, but the test accuracy of block without residual connection is higher than the other one. Remaining the initial architecture is a better choice. 
 
