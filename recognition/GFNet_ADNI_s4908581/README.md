@@ -178,7 +178,7 @@ It represents the probability mass redistributed from true class. The loss $L_n$
 
 $$L_n = (1 - \epsilon) \cdot \left[-\log(\frac{exp(x_{n,y_n})}{\sum_{c=1}^{C}exp(x_{n,c})})\right] + \epsilon \cdot \left[-\frac{1}{C} \sum_{c=1}^C \log(p_j) \right]$$
 
-where $x$ is the x is the output of the model (logits), $y$ is the target category index, $w_{y_n}$ is the weight of class ${y_n}$, $C$ is the number of classes. $N$ is the *n*th sample, $p_j$ is the predicted probability of class $j$, $\epsilon$ is the smoothing parameter that controls the degree of label smoothing.
+where $x$ is the output of the model (logits), $y$ is the target category index, $w_{y_n}$ is the weight of class ${y_n}$, $C$ is the number of classes. $N$ is the *n*th sample, $p_j$ is the predicted probability of class $j$, $\epsilon$ is the smoothing parameter that controls the degree of label smoothing.
 
 In the training, the smoothing parameter​​ set to 0.1. The table below shows the comparison of the two loss functions.
 
