@@ -214,6 +214,7 @@ In the two optimizers, weight decay is coupled with gradient update in Adam, whi
 I tried two different scheduler configurations. Below is a comparison.
 
 Config1:  CosineAnnealingWarmRestarts (T_0=10, T_mult=2, eta_min=1e-6)
+
 Config2:  CosineAnnealingWarmRestarts (T_0=20, T_mult=2, eta_min=1e-7)
 
 | | Config1 | Config2 |
