@@ -148,11 +148,11 @@ The below table shows the comparison of two models.
 |-------|-------|-------|
 | Test Accuracy | 75.30% | 74.37% |
 
-The below figure show the training and validation result of initial version.
+The below figure shows the training and validation result of initial version.
 
 ![Fig6: Training and validation result of initial version](Figures/Training_vs_validation_initial.png)
 
-The below figure show the training and validation result of residual connection version.
+The below figure shows the training and validation result of residual connection version.
 
 ![Fig7: Training and validation result of residual connection version](Figures/Training_vs_validation_residual.png)
 
@@ -164,7 +164,7 @@ I have also noticed that there are more complex architectures from different pap
 ### **Loss function**
 I applied to different loss functions in training. Below are the details of the two loss function.
 
-- Loss function 1: Standard Cross Entrophy
+- Loss function 1: Standard Cross Entropy
 This loss function is PyTorch's default classification loss that directly maximizes true class probability. The loss $L_n$ is calculated as below:
 
 $$L_n = -w_{y_n}× \log \frac{exp(x_{n,y_n})}{\sum_{c=1}^{C}exp(x_{n,c})}$$
