@@ -174,7 +174,7 @@ where $x$ is the x is the output of the model (logits), $y$ is the target catego
 - Loss function 2: Label Smooth Cross Entropy
 This custom loss function implements ​​label smoothing​​. The idea of label smoothing is that do not consider the probability of the correct category as 1 and that of other categories as 0. Instead, slightly reduce the confidence level of the correct category and give some weight to other categories to enhance the generalization ability of the model, avoid overfitting or overconfidence.
 
-- It represents the probability mass redistributed from true class. The loss $L_n$ is calculated as below.
+It represents the probability mass redistributed from true class. The loss $L_n$ is calculated as below.
 
 $$L_n = (1 - \epsilon) \cdot \left[-\log(\frac{exp(x_{n,y_n})}{\sum_{c=1}^{C}exp(x_{n,c})})\right] + \epsilon \cdot \left[-\frac{1}{C} \sum_{c=1}^C \log(p_j) \right]$$
 
