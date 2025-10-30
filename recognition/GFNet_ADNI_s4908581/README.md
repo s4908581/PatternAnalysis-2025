@@ -15,7 +15,7 @@ Alzheimer's disease is a progressive neurodegenerative disorder characterized by
 
 ## **Model Architecture**
 ### **Model Description**
-I adopted GFNet for the classifition task. The architecture is shown in the figure (Rao, 2023):
+I adopted GFNet for the classification task. The architecture is shown in the figure (Rao, 2023):
 
 ![Fig1: Model architecture](Figures/architecture.png)
 
@@ -25,11 +25,11 @@ Patch Embedding: GFNet divides the input image into non-overlapping patches of s
 
 Global Filter Layer: GFNet replaces the self-attention layer in ViTs with three key operations. First is a 2D discrete Fourier transform that converts spatial features to frequency domain. Second is an element-wise multiplication between frequency-domain features and learnable global filters. Third is 2D inverse Fourier transform, which transforms the data back to spatial domain. The overall time complexity​​ of this operation is O(L log L)
 
-FFN (Feed Forward Network): The output tokens from the Global Filter Layer are processed by a Feed forward network. The process contains MLP (Multilayer Perceptrons) with layer normalization. This component applies non-linear transformations to refine the extracted features and enhance the model's representational capacity.
+FFN (Feed Forward Network): The output tokens from the Global Filter Layer are processed by a Feed forward network. The process contains MLP (Multilayer Perception) with layer normalization. This component applies non-linear transformations to refine the extracted features and enhance the model's representational capacity.
 
 Global Average Pooling and Linear Classifier: The final stage aggregates processed tokens through global average pooling, and produces a compact feature vector that summarizes the entire input. This vector then passes through a linear classifier that outputs probability scores for each disease category (Alzheimer's vs. Cognitive Normal).
 
-In the architecture, a block contains global filter layer and FFN. For each epoch, data goes patch embedding, then passes *N* sequential blocks, and finally goes to global average pooling and linear classfier. The block number *N* is adjustable for different tasks. 
+In the architecture, a block contains global filter layer and FFN. For each epoch, data goes patch embedding, then passes *N* sequential blocks, and finally goes to global average pooling and linear classifier. The block number *N* is adjustable for different tasks. 
 
 ### **Why choose GFNet**
 Compared with traditional CNNS and ViT, GFNet has the following advantages:
@@ -95,12 +95,12 @@ The result of training is shown in the figure:
 
 ![Fig2: Loss and accuracy of training and validation](Figures/Training_vs_validation.png)
 
-Result shows that the training accuracy can achieve over 85%, and the validation accuracy can achieve over 80%. The training loss first decreasely rapidly, and then the ​​rate of decrease gradually slows. The validation loss follows a similar trend. The gap between training loss and validation loss is small and remains stable in the majority training process. This shows that the model has a good generalization capability and robustness. However, the gap increases in the final stage of training. This is probably because the model experienced slight overfitting in the later stage of training. The reason is that the learning rate may be too low in the later stage, and the number of epochs is too high, leading to overfitting. A possible solution is to reduce number of epochs. In my code, I added early stopping for improvement. The early stopping is disabled to show the whole training process, the model stops at epoch 104 in another trial. Despite this, the model can effectively learn from the training data and maintains its performance in validation data.
+Result shows that the training accuracy can achieve over 85%, and the validation accuracy can achieve over 80%. The training loss first decrease rapidly, and then the ​​rate of decrease gradually slows. The validation loss follows a similar trend. The gap between training loss and validation loss is small and remains stable in the majority training process. This shows that the model has a good generalization capability and robustness. However, the gap increases in the final stage of training. This is probably because the model experienced slight overfitting in the later stage of training. The reason is that the learning rate may be too low in the later stage, and the number of epochs is too high, leading to overfitting. A possible solution is to reduce number of epochs. In my code, I added early stopping for improvement. The early stopping is disabled to show the whole training process, the model stops at epoch 104 in another trial. Despite this, the model can effectively learn from the training data and maintains its performance in validation data.
 
 ### **Testing Result**
 The test data are from testing set. The accuracy of the model is **75.83%**. The result indicates that the model has a reasonable performance when meeting unseen data, demonstrating good generalization ability. 
 
-The visualization of the performance are shown below.
+The visualization of the performance is shown below.
 #### **Actual label vs. Predicted label**
 The output plot do_prediction() function is shown below. The function randomly samples nine images from the test set and do prediction to the images. The output compares the predicted labels and the true labels of each sampled image.
 
