@@ -263,7 +263,7 @@ For local machine (The code is tested on local machine):
 5. Run train.py
 6. Run predict.py
 
-### **References**
+## **References**
 [1] Y. Rao, W. Zhao, Z. Zhu, J. Zhou and J. Lu, "GFNet: Global Filter Networks for Visual Recognition," in IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 45, no. 9, pp. 10960-10973, 1 Sept. 2023.
 
 [2] raoyongming, "GFNet", 2021. [Online]. Available: https://github.com/raoyongming/GFNet [Accessed: Oct. 29, 2024]
